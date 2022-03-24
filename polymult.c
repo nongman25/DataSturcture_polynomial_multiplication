@@ -11,7 +11,7 @@
 typedef struct
 {
    int degree;
-   int* coef;
+   int* coef; //교재와 같이 MAX_DEGEE 크기의 배열로 선언해도 상관없으나 범용성을 위해 동적할당함.
 } coef_poly;
 
 typedef struct
@@ -22,6 +22,8 @@ typedef struct
 
 void print_mult_sequence(int ,int);
 void print_coef_poly(coef_poly*);
+term* attach(term* D, int* avail_D, int coef_attach, int expo_attach);
+void polynomial_multiply(coef_poly A, coef_poly B, term* D, int* start_D, int* end_D, int avail_D);
 
 int main()
 {
@@ -32,6 +34,13 @@ int main()
    B.coef = (int*) malloc(sizeof(int)*(MAX_DEGREE_B+1));
 
    term* D = (term*) malloc(sizeof(term)*MAX_TERM_NUM_D);
+   int avail_D =0, start_D=0, end_D;
+
+   for(int i=0; i<MAX_TERM_NUM_D; i++)      //initializing D
+   {
+      D[i].coef =0;
+      D[i].expo =0;
+   }
 
    int coef_tmp, expo_tmp;
 
@@ -57,34 +66,95 @@ int main()
    print_coef_poly(&A);
    printf("B 다항식\n");
    print_coef_poly(&B);
+   polynomial_multiply(A,B,D,&start_D,&end_D,avail_D);
+
+   printf("result of multiplicaition ( D(x) )\n\n");
+   for(int i= start_D; i<=end_D;i++)              //D(X)
+   {
+      printf("%dX^%d ",D[i].coef,D[i].expo);
+      if(i!=end_D)
+         printf(" + ");
+   }
+   printf("\n");
 
 }
 
 void print_coef_poly(coef_poly* A)
 {
-   int count =3;
+   //int count = 3;
    for(int i=A->degree; i>=0; i--)
    {
-      if(A->coef[i])
-      {
-         printf("%dX^%d ",A->coef[i], i);
-         if(--count>0)
-            printf(" + ");
-      }
+      //if(A->coef[i])    //print term only if coef > 0 
+      printf("%dX^%d ",A->coef[i], i);
+      //if(--count>0)
+      if(i)
+         printf(" + ");
    }
    printf("\n");
+}
+
+void polynomial_multiply(coef_poly A, coef_poly B, term* D, int* start_D, int* end_D, int avail_D) // call by value or call by address
+{
+   *start_D = avail_D;
+   for(int i= A.degree + B.degree; i>=0; i--)  // D의 항 중 지수가 i인 항들 먼저 모두 계산.
+   {
+      int depth = A.degree+B.degree - i;
+    //  printf("depth = %d\n",depth);
+      for(int j= depth; j>=0; j--)
+      {
+         if((A.degree-j)>=0&&(B.degree-depth+j)>=0)     //A, B의 항들의 지수가 음수가 되면 패스.
+         {
+            if(((A.coef[A.degree-j])!=0)&&((B.coef[B.degree-depth+j]!=0)))       //곱하는 항들 중에 계수가 0이면 곱할 필요 없음.
+            {
+               attach(D, &avail_D,(A.coef[A.degree-j])*(B.coef[B.degree-depth+j]),i);
+            }
+         }
+      }
+   } 
+   *end_D = avail_D-1; 
+}
+
+term* attach(term* D, int* avail_D, int coef_attach, int expo_attach)
+{
+   if(*avail_D>MAX_TERM_NUM_D) //마지막 항이랑 계수 같을 시 Attach 가능
+   {
+      printf("polynomail is full size\n");
+      return D;
+   }
+   if(!*avail_D)     //in case avail =0 
+   {
+      D[*avail_D].coef = coef_attach;
+      D[*avail_D].expo = expo_attach;
+      (*avail_D)++;
+      return D;
+   }
+   if(D[*avail_D-1].expo==expo_attach) //in case attach existing exponent
+   {
+      D[*avail_D-1].coef+=coef_attach;
+      if(!D[*avail_D-1].coef)          //in case result of sum is 0 -> delete term
+      {
+         D[*avail_D-1].expo = 0;
+         (*avail_D)--;  
+      }
+   }else                               //in case add new exponent
+   {
+      D[*avail_D].coef = coef_attach;
+      D[*avail_D].expo = expo_attach;
+      (*avail_D)++;
+   }
+   return D;
 }
 
 void print_mult_sequence(int a, int b)
 {
    for(int i=a+b; i>=0;i--)
    {
-      int depts= a+b-i;
-      for(int j=depts; j>=0;j--)
+      int depth= a+b-i;
+      for(int j=depth; j>=0;j--)
       {
-         if((a-j)>=0&&(b-depts+j)>=0)
+         if((a-j)>=0&&(b-depth+j)>=0)
          {
-            printf("comepare a[%d] with b[%d]\n",(a-j),(b-depts+j));
+            printf("comepare a[%d] with b[%d]\n",(a-j),(b-depth+j));
          }
       }
    }
