@@ -7,6 +7,7 @@
 #define MAX_TERM_NUM_A 3
 #define MAX_TERM_NUM_B 3
 #define MAX_TERM_NUM_D 8
+#define REPETITION 3
 
 typedef struct
 {
@@ -27,60 +28,67 @@ void polynomial_multiply(coef_poly A, coef_poly B, term* D, int* start_D, int* e
 
 int main()
 {
-   coef_poly A;
-   A.coef = (int*) malloc(sizeof(int)*(MAX_DEGREE_A+1));
-
-   coef_poly B;
-   B.coef = (int*) malloc(sizeof(int)*(MAX_DEGREE_B+1));
-
-   term* D = (term*) malloc(sizeof(term)*MAX_TERM_NUM_D);
-   int avail_D =0, start_D=0, end_D;
-
-   for(int i=0; i<MAX_TERM_NUM_D; i++)      //initializing D
+   for(int r =0; r<REPETITION; r++)
    {
-      D[i].coef =0;
-      D[i].expo =0;
+    coef_poly A;
+     A.coef = (int*) malloc(sizeof(int)*(MAX_DEGREE_A+1));
+
+      coef_poly B;
+      B.coef = (int*) malloc(sizeof(int)*(MAX_DEGREE_B+1));
+
+      term* D = (term*) malloc(sizeof(term)*MAX_TERM_NUM_D);
+      int avail_D =0, start_D=0, end_D;
+
+      for(int i=0; i<MAX_TERM_NUM_D; i++)      //initializing D
+      {
+         D[i].coef =0;
+         D[i].expo =0;
+      }
+
+      int coef_tmp, expo_tmp;
+
+      for(int i=0; i<MAX_TERM_NUM_A; i++)
+      {
+         printf("polynomial A의 '%d' 번째 항 입력 (계수 지수) 형식으로 입력\n" ,i+1);
+         scanf("%d %d",&coef_tmp,&expo_tmp);
+         A.coef[expo_tmp] = coef_tmp;
+         A.degree= (A.degree<expo_tmp) ? expo_tmp: A.degree;
+         fflush(stdin);
+      }
+
+      for(int i=0; i<MAX_TERM_NUM_B; i++)
+      {
+         printf("polynomial B의 '%d' 번째 항 입력 (계수 지수) 형식으로 입력\n" ,i+1);
+         scanf("%d %d",&coef_tmp,&expo_tmp);
+         B.coef[expo_tmp] = coef_tmp;
+         B.degree= (B.degree<expo_tmp) ? expo_tmp: B.degree;
+         fflush(stdin);
+      }
+
+      printf("A 다항식\n");
+      print_coef_poly(&A);
+      printf("B 다항식\n");
+      print_coef_poly(&B);
+      polynomial_multiply(A,B,D,&start_D,&end_D,avail_D);
+
+      printf("\nresult of multiplicaition ( D(x) )\n");
+      for(int i= start_D; i<=end_D;i++)              //D(X)
+      {
+         printf("%dX^%d ",D[i].coef,D[i].expo);
+         if(i!=end_D)
+            printf(" + ");
+      }
+      printf("\n\n");
+
+      free(A.coef);
+      free(B.coef);
+      free(D);
    }
-
-   int coef_tmp, expo_tmp;
-
-   for(int i=0; i<MAX_TERM_NUM_A; i++)
-   {
-      printf("polynomial A의 '%d' 번째 항 입력 (계수 지수) 형식으로 입력\n" ,i+1);
-      scanf("%d %d",&coef_tmp,&expo_tmp);
-      A.coef[expo_tmp] = coef_tmp;
-      A.degree= (A.degree<expo_tmp) ? expo_tmp: A.degree;
-      fflush(stdin);
-   }
-
-   for(int i=0; i<MAX_TERM_NUM_B; i++)
-   {
-      printf("polynomial B의 '%d' 번째 항 입력 (계수 지수) 형식으로 입력\n" ,i+1);
-      scanf("%d %d",&coef_tmp,&expo_tmp);
-      B.coef[expo_tmp] = coef_tmp;
-      B.degree= (B.degree<expo_tmp) ? expo_tmp: B.degree;
-      fflush(stdin);
-   }
-
-   printf("A 다항식\n");
-   print_coef_poly(&A);
-   printf("B 다항식\n");
-   print_coef_poly(&B);
-   polynomial_multiply(A,B,D,&start_D,&end_D,avail_D);
-
-   printf("result of multiplicaition ( D(x) )\n\n");
-   for(int i= start_D; i<=end_D;i++)              //D(X)
-   {
-      printf("%dX^%d ",D[i].coef,D[i].expo);
-      if(i!=end_D)
-         printf(" + ");
-   }
-   printf("\n");
-
 }
 
 void print_coef_poly(coef_poly* A)
 {
+   printf("\n");
    //int count = 3;
    for(int i=A->degree; i>=0; i--)
    {
