@@ -30,11 +30,15 @@ int main()
 {
    for(int r =0; r<REPETITION; r++)
    {
-    coef_poly A;
-     A.coef = (int*) malloc(sizeof(int)*(MAX_DEGREE_A+1));
+      coef_poly A;
+      A.coef = (int*) malloc(sizeof(int)*(MAX_DEGREE_A+1));
+      for(int i=0; i<=MAX_DEGREE_A;i++)
+         A.coef[i]=0;
 
       coef_poly B;
       B.coef = (int*) malloc(sizeof(int)*(MAX_DEGREE_B+1));
+      for(int i=0; i<=MAX_DEGREE_B;i++)
+         B.coef[i]=0;
 
       term* D = (term*) malloc(sizeof(term)*MAX_TERM_NUM_D);
       int avail_D =0, start_D=0, end_D;
@@ -65,10 +69,12 @@ int main()
          fflush(stdin);
       }
 
-      printf("A 다항식\n");
+      printf("A 다항식");
       print_coef_poly(&A);
-      printf("B 다항식\n");
+      printf("\n");
+      printf("B 다항식");
       print_coef_poly(&B);
+      printf("\n");
       polynomial_multiply(A,B,D,&start_D,&end_D,avail_D);
 
       printf("\nresult of multiplicaition ( D(x) )\n");
